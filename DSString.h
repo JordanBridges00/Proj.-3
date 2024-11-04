@@ -1,4 +1,4 @@
-*
+/*
  * This file should help you to create a minimal interface for your string class based on
  * a dynamically allocated char array. Note that c-strings use `\0` as a terminator symbol
  * but your class should store its length in a member variable. Do not use c-string functions
