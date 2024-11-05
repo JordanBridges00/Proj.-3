@@ -14,7 +14,7 @@ to the training and testing datasets, allowing for flexibility in file input and
 practical application of data structures and algorithms and an introduction to text-based machine learning in a C++ environment.
 */
 
-
+/*
 #include <iostream>
 
 
@@ -24,3 +24,56 @@ int main(int argc, char** argv)
 
     return 0;
 }
+*/
+
+#include <iostream>
+#include <fstream>
+#include "SentimentClassifier.h"
+
+int main(int argc, char* argv[]) {
+    if (argc != 6) {
+        std::cerr << "Usage: " << argv[0] 
+                  << " <training dataset> <testing dataset> <ground truth file> <results file> <accuracy file>" 
+                  << std::endl;
+        return 1;
+    }
+
+    std::string trainingFile = argv[1];
+    std::string testingFile = argv[2];
+    std::string groundTruthFile = argv[3];
+    std::string resultsFile = argv[4];
+    std::string accuracyFile = argv[5];
+
+    SentimentClassifier classifier;
+
+    // Train the classifier
+    classifier.train(trainingFile);
+
+    // Open the results file for writing predictions
+    std::ofstream resultsOutput(resultsFile);
+    if (!resultsOutput.is_open()) {
+        std::cerr << "Error: Could not open results file." << std::endl;
+        return 1;
+    }
+
+    // Open the ground truth file for accuracy evaluation
+    std::ofstream accuracyOutput(accuracyFile);
+    if (!accuracyOutput.is_open()) {
+        std::cerr << "Error: Could not open accuracy file." << std::endl;
+        return 1;
+    }
+
+    // Evaluate accuracy and save predictions
+    double accuracy = classifier.evaluate(testingFile, groundTruthFile);
+
+    // Save accuracy to file
+    accuracyOutput << "Accuracy: " << accuracy << std::endl;
+
+    resultsOutput.close();
+    accuracyOutput.close();
+
+    std::cout << "Classification complete. Accuracy: " << accuracy << std::endl;
+
+    return 0;
+}
+
