@@ -4,6 +4,14 @@
 #include <vector>
 #include <stdexcept>
 
+#include <unordered_set>
+
+// Define a list of common stop words
+const std::unordered_set<std::string> stopWords = {
+    "the", "is", "in", "at", "of", "and", "a", "to", "for", "on", "with", "as", "by", "that", "it", "from", "this"
+};
+
+
 // Helper function to read CSV files, returning pairs of sentiment and tweet text
 std::vector<std::pair<std::string, DSString>> readCSV(const std::string& filename) {
     std::vector<std::pair<std::string, DSString>> data;
