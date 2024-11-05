@@ -84,11 +84,14 @@ int SentimentClassifier::predict(const DSString& tweet) {
 }
 
 
-double SentimentClassifier::evaluate(const std::string& testingFile, const std::string& groundTruthFile) {
+
+double SentimentClassifier::evaluate(const std::string& testingFile, const std::string& groundTruthFile, const std::string& resultsFile) {
     std::ifstream testFile(testingFile);
     std::ifstream groundTruth(groundTruthFile);
-    if (!testFile.is_open() || !groundTruth.is_open()) {
-        throw std::runtime_error("Failed to open testing or ground truth file.");
+    std::ofstream resultsOutput(resultsFile);
+
+    if (!testFile.is_open() || !groundTruth.is_open() || !resultsOutput.is_open()) {
+        throw std::runtime_error("Failed to open one or more files.");
     }
 
     std::string testTweet, trueSentiment;
@@ -100,6 +103,10 @@ double SentimentClassifier::evaluate(const std::string& testingFile, const std::
         int predictedSentiment = predict(dsTweet);
         int actualSentiment = (trueSentiment == "positive") ? 1 : 0;
 
+        // Write the predicted sentiment and tweet ID to the results file
+        resultsOutput << ((predictedSentiment == 1) ? "positive" : "negative") << ", " << totalTweets << std::endl;
+
+        // Compare prediction to actual sentiment
         if (predictedSentiment == actualSentiment) {
             correctPredictions++;
         }
@@ -108,7 +115,9 @@ double SentimentClassifier::evaluate(const std::string& testingFile, const std::
 
     testFile.close();
     groundTruth.close();
+    resultsOutput.close();
 
-    // Calculate accuracy
+    // Calculate and return accuracy
     return static_cast<double>(correctPredictions) / totalTweets;
 }
+
