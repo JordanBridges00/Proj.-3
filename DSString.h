@@ -5,91 +5,104 @@
  * from <string.h> or <cstring> other than for conversion from a c-string.
  */
 
-#ifndef DSSTRING_H
-#define DSSTRING_H
+#include "DSString.h"
+#include <cstring>  // For strlen, strcpy
 
-#include <iostream>
+// Default constructor
+DSString::DSString() : data(nullptr), len(0) {}
 
-class DSString
-{
+// Constructor from c-string
+DSString::DSString(const char* str) {
+    if (str) {
+        len = strlen(str);
+        data = new char[len + 1];
+        strcpy(data, str);
+    } else {
+        data = nullptr;
+        len = 0;
+    }
+}
 
-private:
-    char *data; // a pointer to a character array containing the string with a `\0` terminator
-    size_t len; // the length of the string (without the terminator)
-    // Note: we keep the terminator only so we can return a c-string version in function c_str().
+// Copy constructor
+DSString::DSString(const DSString& other) {
+    len = other.len;
+    data = new char[len + 1];
+    strcpy(data, other.data);
+}
 
-public:
-    /**
-     * Make sure you implement the rule-of-three and use proper memory management.
-     * To help you get started, you can implement the following:
-     **/
+// Copy assignment operator
+DSString& DSString::operator=(const DSString& other) {
+    if (this != &other) {
+        delete[] data;
+        len = other.len;
+        data = new char[len + 1];
+        strcpy(data, other.data);
+    }
+    return *this;
+}
 
-    DSString();
-    DSString(const char *); // constructor that converts a cstring
-    // you can also provide  DSString(const std::string &); for std::string
+// Destructor
+DSString::~DSString() {
+    delete[] data;
+}
 
-    // Rule of three is needed if dynamic memory allocation is used
-    DSString(const DSString &);            // copy constructor
-    DSString &operator=(const DSString &); // copy assignment operator
-    ~DSString();                           // destructor
+// Return the length of the string
+size_t DSString::length() const {
+    return len;
+}
 
-    // you can also implement the move versions for the big 5 (C+11)
+// Overload [] operator
+char& DSString::operator[](size_t index) {
+    return data[index];  // Add bounds checking in real scenario
+}
 
-    size_t length() const; // returns the length of the string
+// Concatenate two DSStrings
+DSString DSString::operator+(const DSString& other) const {
+    DSString result;
+    result.len = len + other.len;
+    result.data = new char[result.len + 1];
+    strcpy(result.data, data);
+    strcat(result.data, other.data);
+    return result;
+}
 
-    char &operator[](size_t); // returns a reference to the character at the given index
+// Equality check
+bool DSString::operator==(const DSString& other) const {
+    return strcmp(data, other.data) == 0;
+}
 
-    /**
-     * Overloaded operator+ which appends the string in the argument to this string
-     */
-    DSString operator+(const DSString &) const;
+// Less than
+bool DSString::operator<(const DSString& other) const {
+    return strcmp(data, other.data) < 0;
+}
 
-    /**
-     * Standard relational operators to compare and order your strings.
-     * Feel free to add more.
-     **/
-    bool operator==(const DSString &) const;
-    bool operator<(const DSString &) const;
+// Get substring
+DSString DSString::substring(size_t start, size_t numChars) const {
+    DSString sub;
+    if (start + numChars > len) numChars = len - start;
+    sub.data = new char[numChars + 1];
+    strncpy(sub.data, data + start, numChars);
+    sub.data[numChars] = '\0';
+    sub.len = numChars;
+    return sub;
+}
 
-    /**
-     * The substring method returns a new string object that contains a
-     * sequence of characters from this string object.
-     *
-     * param start - the index of where to start
-     * param numChars - the number (count) of characters to copy into
-     *    the substring
-     * @return a DSString object containing the requested substring
-     **/
-    DSString substring(size_t start, size_t numChars) const;
+// Convert to lowercase
+DSString DSString::toLower() const {
+    DSString lower(*this);  // Copy current string
+    for (size_t i = 0; i < len; ++i) {
+        lower.data[i] = tolower(data[i]);  // Convert each character to lower case
+    }
+    return lower;
+}
 
-    /**
-     * @brief Returns a new string object with all characters in lowercase
-     *
-     * @return DSString
-     */
-    DSString toLower() const; // look at the ASCII table for this!
+// c-string accessor
+const char* DSString::c_str() const {
+    return data;
+}
 
-    /**
-     * the c_str function returns a pointer a null-terminated c-string holding the
-     * contents of this object. Since data already has a `\0`
-     * at the end of the string in DSString so you can just return a pointer to data.
-     **/
-    const char *c_str() const;
+// Stream insertion operator
+std::ostream& operator<<(std::ostream& os, const DSString& str) {
+    return os << str.data;
+}
 
-    // a conversion to std::string would also be nice to have: string string() const;
-
-    /**
-     * Overloaded stream insertion operator to print the contents of this
-     * string to the output stream in the first argument. Remember:
-     * This operator needs to be implemented outside of the class (and outside the class
-     * namespace) as a friend because it operates on the stream and not the DSString object.
-     **/
-    friend std::ostream &operator<<(std::ostream &, const DSString &);
-
-    // You are free to add more functionality to the class.  For example,
-    // you may want to add a find(...) function that will search for a
-    // substring within a string or a function that breaks a string into words.
-    // You will need a split or tokenize function.
-};
-
-#endif
