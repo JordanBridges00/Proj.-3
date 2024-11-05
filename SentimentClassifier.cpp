@@ -27,6 +27,21 @@ std::vector<std::pair<std::string, DSString>> readCSV(const std::string& filenam
     return data;
 }
 
+#include <vector>
+
+// Tokenizes a string into words and returns them as a vector of DSString objects
+std::vector<DSString> tokenize(const DSString& text) {
+    std::vector<DSString> tokens;
+    std::stringstream ss(text.c_str());
+    std::string word;
+
+    while (ss >> word) {
+        tokens.emplace_back(word.c_str());  // Convert each word to DSString
+    }
+
+    return tokens;
+}
+
 
 void SentimentClassifier::train(const std::string& trainingFile) {
     std::ifstream file(trainingFile);
