@@ -44,54 +44,45 @@ std::vector<DSString> tokenize(const DSString& text) {
 
 
 void SentimentClassifier::train(const std::string& trainingFile) {
-    std::ifstream file(trainingFile);
-    if (!file.is_open()) {
-        throw std::runtime_error("Failed to open training file.");
-    }
+    auto data = readCSV(trainingFile);  // Use readCSV to get the training data
 
-    std::string line;
-    while (getline(file, line)) {
-        std::stringstream ss(line);
-        std::string sentiment, tweet;
-        getline(ss, sentiment, ',');  // Read sentiment (assume first column)
-        getline(ss, tweet);           // Read tweet text (assume rest of line)
+    for (const auto& entry : data) {
+        const std::string& sentiment = entry.first;
+        const DSString& tweet = entry.second;
 
-        std::stringstream tweetStream(tweet);
-        std::string word;
-        while (tweetStream >> word) {
-            DSString dsWord(word.c_str());  // Convert to DSString if necessary
+        // Tokenize the tweet
+        auto tokens = tokenize(tweet);
 
+        // Update word frequencies based on sentiment
+        for (const auto& word : tokens) {
             if (sentiment == "positive") {
-                positiveWords[dsWord]++;
+                positiveWords[word]++;
             } else if (sentiment == "negative") {
-                negativeWords[dsWord]++;
+                negativeWords[word]++;
             }
         }
     }
-    file.close();
 }
 
+
 int SentimentClassifier::predict(const DSString& tweet) {
-    std::stringstream tweetStream(tweet.c_str());
-    std::string word;
+    auto tokens = tokenize(tweet);  // Tokenize the tweet
+
     int positiveScore = 0;
     int negativeScore = 0;
 
-    while (tweetStream >> word) {
-        DSString dsWord(word.c_str());
-
-        if (positiveWords.find(dsWord) != positiveWords.end()) {
-            positiveScore += positiveWords[dsWord];
+    for (const auto& word : tokens) {
+        if (positiveWords.find(word) != positiveWords.end()) {
+            positiveScore += positiveWords[word];
         }
-
-        if (negativeWords.find(dsWord) != negativeWords.end()) {
-            negativeScore += negativeWords[dsWord];
+        if (negativeWords.find(word) != negativeWords.end()) {
+            negativeScore += negativeWords[word];
         }
     }
 
-    // Return 1 for positive sentiment, 0 for negative sentiment
     return (positiveScore > negativeScore) ? 1 : 0;
 }
+
 
 double SentimentClassifier::evaluate(const std::string& testingFile, const std::string& groundTruthFile) {
     std::ifstream testFile(testingFile);
