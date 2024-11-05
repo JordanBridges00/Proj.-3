@@ -49,31 +49,21 @@ int main(int argc, char* argv[]) {
     // Train the classifier
     classifier.train(trainingFile);
 
-    // Open the results file for writing predictions
-    std::ofstream resultsOutput(resultsFile);
-    if (!resultsOutput.is_open()) {
-        std::cerr << "Error: Could not open results file." << std::endl;
-        return 1;
-    }
+    // Evaluate accuracy and save predictions
+    double accuracy = classifier.evaluate(testingFile, groundTruthFile, resultsFile);
 
-    // Open the ground truth file for accuracy evaluation
+    // Open accuracy file and write the accuracy value
     std::ofstream accuracyOutput(accuracyFile);
     if (!accuracyOutput.is_open()) {
         std::cerr << "Error: Could not open accuracy file." << std::endl;
         return 1;
     }
 
-    // Evaluate accuracy and save predictions
-    double accuracy = classifier.evaluate(testingFile, groundTruthFile);
-
-    // Save accuracy to file
-    accuracyOutput << "Accuracy: " << accuracy << std::endl;
-
-    resultsOutput.close();
+    // Write accuracy to file in specified format (e.g., 0.500)
+    accuracyOutput << accuracy << std::endl;
     accuracyOutput.close();
 
     std::cout << "Classification complete. Accuracy: " << accuracy << std::endl;
 
     return 0;
 }
-
