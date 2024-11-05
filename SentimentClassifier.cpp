@@ -1,7 +1,32 @@
 #include "SentimentClassifier.h"
 #include <fstream>
 #include <sstream>
+#include <vector>
 #include <stdexcept>
+
+// Helper function to read CSV files, returning pairs of sentiment and tweet text
+std::vector<std::pair<std::string, DSString>> readCSV(const std::string& filename) {
+    std::vector<std::pair<std::string, DSString>> data;
+    std::ifstream file(filename);
+
+    if (!file.is_open()) {
+        throw std::runtime_error("Failed to open file: " + filename);
+    }
+
+    std::string line;
+    while (getline(file, line)) {
+        std::stringstream ss(line);
+        std::string sentiment, tweet;
+        getline(ss, sentiment, ',');  // Read sentiment
+        getline(ss, tweet);           // Read tweet text
+
+        data.emplace_back(sentiment, DSString(tweet.c_str()));
+    }
+
+    file.close();
+    return data;
+}
+
 
 void SentimentClassifier::train(const std::string& trainingFile) {
     std::ifstream file(trainingFile);
